@@ -1,0 +1,74 @@
+\documentclass{jsarticle}
+\usepackage{amsmath,amsfonts,amsthm}
+\theoremstyle{definition}
+\newtheorem{definition}{定義}
+\newtheorem{example}{例}
+
+\begin{document}
+
+ポケモンバトルの概要：二人のプレイヤーA,Bがそれぞれ $n$ 体のポケモンを用いて勝負する．
+各ポケモンは体力，攻撃力，防御力，素早さのパラメータ，いくつかの技と，タイプと呼ばれる情報を持つ．
+技には相手のポケモンの体力を減らすもの(攻撃技)や自分の体力を回復するもの(回復技)がある．
+バトル中には各プレイヤーは常に1体のポケモンを場に出しており，他のポケモンは控えに置く．
+
+各ターン，プレイヤーは(1)場に出ている自分のポケモンの技を使う，(2)場の自分のポケモンを，自分の控えにいる体力が0より大きいポケモン1体と交換する，のどちらかを選ぶ．
+各プレイヤーは自分の行動を同時に発表する．双方の場のポケモンが技を使う場合，素早さの速いポケモンの技が先に発動する．
+どちらかのプレイヤーが控えとの交換を選び，他方が技を選んだ場合，交換は技よりも先に起こる．
+技によってポケモンの体力が0になった場合，その所持者であるプレイヤーは控えから体力が0でないポケモンを選び，交換する．
+技を使って相手のすべてのポケモンの体力を0にしたプレイヤーが勝者となる．
+
+攻撃技には威力 $d$ と命中率 $p$ というパラメータとタイプを持つ．
+技は $1-p$ の確率で失敗し，失敗した場合技の効果は発動しない．
+成功した場合，場にいる相手のポケモンの体力を減らす．
+減らす量(ダメージ)は $\lfloor(\alpha da/b + \beta)e(t_1,t_2)\rfloor$ である．
+ここで，$a$ は技を使う側のポケモンの攻撃力，$b$ は他方の場のポケモンの防御力 $b$，$t_1$ は技のタイプ，$t_2$ は相手の場のポケモンのタイプ，$e$ はバトルの前に固定された関数，$\alpha,\beta$ はバトルの前に固定された正定数である．
+
+回復技は回復率 $r\in[0,1]$ というパラメータを持つ．回復技を使うとそのポケモンは自身の最大体力の $r$ 倍の体力を回復する．
+
+\section{形式化}
+正整数 $n$，正実数 $\alpha,\beta$，集合 $T$，$e\colon T \times T \to \mathbb{R_{\ge 0}}$ を固定する．
+$n$ はバトルにおいて各プレイヤーが何体のポケモンを持つかを表し，$\alpha,\beta$ はダメージの計算に使う定数である．
+集合 $T$ の要素はタイプと呼ばれ，$e$ はタイプ相性関数と呼ばれる．
+\begin{definition}
+(技)攻撃技とは，威力と呼ばれる正整数 $d$ と命中率と呼ばれる実数 $p\in [0,1]$，タイプ $t\in T$ の3つ組から成る．
+回復技とは，回復率と呼ばれる実数 $r \in [0,1]$ から成る．
+攻撃技と回復技を合わせて技と呼び，すべての技の集合を $\mathcal M$ と書く．
+\end{definition}
+\begin{definition}
+(ポケモン)ポケモンとは，正整数 $H,A,B,S$，タイプ $t \in T$，技の集合 $M\subset \mathcal M$ の6つ組である．
+ここで，$H$ は最大体力もしくは最大ヒットポイント(最大HP)，$A$ は攻撃力，$B$ は防御力，$S$ は素早さと呼ばれる．
+\end{definition}
+二人のプレイヤーを $\mathcal A,\mathcal B$ とする．
+バトルは，プレイヤー $\mathcal A$ には $n$ 体のポケモン $P_{\mathcal A,1},\dots,P_{\mathcal A,n}$，$\mathcal B$ には $P_{\mathcal B,1},\dots,P_{\mathcal B,n}$ が割り当てられている状態から始まる．
+ポケモン $P_{X,i}$ に対する上記のパラメータ $H,A,\dots$ をそれぞれ $H_{X,i},A_{X,i},\dots$ などと書く．
+\begin{definition}
+(局面)ゲーム中の局面は，($2n+2$)-組 $(i_A,i_B，h_{\mathcal A,1},\dots,h_{\mathcal A,n},h_{\mathcal B,1},\dots,h_{\mathcal B,n})$ で現わされる．
+ここで，$i_\mathcal A,i_\mathcal B$ はそれぞれ $\mathcal A,\mathcal B$ の場にいるポケモンが $P_{\mathcal A,i_\mathcal A},P_{\mathcal B,i_\mathcal B}$ であることを表し，$h_{X,i}$ はポケモン $P_{X,i}$ の体力もしくはヒットポイント(HP)と呼ばれる．
+通常，$h_{X,i}$ が区間 $[0,H_{x,i}]$ 上にあるようなものだけ扱う．
+
+局面 $(1,1,H_{\mathcal A,1},\dots,H_{\mathcal A,n},H_{\mathcal B,1},\dots,H_{\mathcal B,n})$ を初期局面と呼び，バトルはこの局面から始まる．
+\end{definition}
+\begin{definition}
+(局面遷移)局面を遷移させるために，プレイヤー $X$ は以下のいずれかの行動を取る：
+\begin{enumerate}
+	\item (技を繰り出す)場のポケモン $P_{X,i_X}$ の技 $m\in M_{X,i_X}$ を一つ選ぶ．
+	\item (場のポケモンを交換する)場にいない自分のポケモン $P\in \{P_{X,1},\dots,P_{X,n}\}\setminus\{P_{X,i_X}\}$ を一体選ぶ．
+\end{enumerate}
+プレイヤー $\mathcal A,\mathcal B$ は行動を決めた後同時にそれを発表する．
+現在の局面 $(i_\mathcal A,i_\mathcal B,h_{\mathcal A,1},\dots,h_{\mathcal A,n},h_{\mathcal B,1},\dots,h_{\mathcal B,n})$ は以下の手順で(破壊的)更新する：
+\begin{itemize}
+	\item プレイヤー $X$ がポケモン $P_{X,i}$ への交換を選んだ場合，$i_X := i$ とする．
+	\item 技 $m$ を選んだプレイヤー $X$ について以下を行う．双方のプレイヤーが技を選んだ場合，素早さ $S_{X,i_X}$ がより大きい方の処理を先に行う．
+素早さが同じ場合，1/2の乱数で先行を決定する．
+先に行われた技によって，後に行動するポケモンの体力 $h_{X,i_X}$ が0になった場合，そのポケモンの技の処理は行われない．
+	\begin{itemize}
+		\item $m$ が攻撃技 $(d,p,t)$ の場合：区間 $[0,1]$ 上の一様乱数を生成し，それが $p$ 以下の場合，$h_{\bar X,i_{\bar X}} := \min(0,h_{\bar X,i_{\bar X}} - \lfloor(\alpha dA_{X,i_X}/B_{\bar X,i_{\bar X}} + \beta)e(t,t_{\bar X,i_{\bar X}}) \rfloor)$ と更新する．
+ここで，$\bar X$ は $X=\mathcal A$ のとき $\mathcal B$，$X=\mathcal B$ のとき $\mathcal A$ を表す．
+		\item $m$ が回復技の場合：$m$ の回復率が $r$ のとき，$h_{X,i_X} := \max(H_{X,i_X},\lfloor h_{X,i_X} + rH_{X,i_X}\rfloor)$ と更新する．
+	\end{itemize}
+	\item 場のいずれかのポケモンの体力が0になった場合，その所持者は控えから体力が0でない自身のポケモン $P_{X,i}$ を選び，$i_X := i$ と更新する．
+自身のすべてのポケモンの体力が0の場合，そのプレイヤーは敗者となり，バトルは終了する．
+\end{itemize}
+\end{definition}
+
+\end{document}
